@@ -1,0 +1,23 @@
+# Environment & secrets
+.env*
+
+# Obsidian internal (user-specific)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/plugins/*/data.json
+
+# Temporary files
+*.tmp
+full.txt
+source_content.txt
+sources.json
+summary.json
+
+# OS files
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Python
+__pycache__/
+*.pyc
