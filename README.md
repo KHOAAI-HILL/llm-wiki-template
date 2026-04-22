@@ -5,6 +5,7 @@
 [![Obsidian](https://img.shields.io/badge/Obsidian-7C3AED?logo=obsidian&logoColor=white)](https://obsidian.md/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+🌐 **Language:** **English** | [Tiếng Việt](README-vi.md)
 ---
 
 ## 📺 Video Hướng Dẫn
