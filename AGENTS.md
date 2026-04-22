@@ -5,12 +5,12 @@
 
 ## Purpose
 
-This Obsidian vault is an **AI-managed knowledge base** following the [Karpathy LLM Knowledge Base](https://x.com/karpathy/status/2039713585185882267) methodology. The LLM writes and maintains all wiki content. The human rarely edits directly — they ingest raw data, ask questions, and review outputs.
+This Obsidian vault is an **AI-managed knowledge base** following the Karpathy LLM Knowledge Base methodology. The LLM writes and maintains all wiki content. The human rarely edits directly — they ingest raw data, ask questions, and review outputs.
 
 ## Directory Structure
 
 ```
-llm-wiki-template/
+Second-brain/
 ├── raw/                 ← Source documents. NEVER modify, only ADD.
 │   ├── articles/        ← Web articles (clipped or pasted)
 │   ├── papers/          ← Academic papers, PDF notes
@@ -33,6 +33,13 @@ llm-wiki-template/
 │   ├── charts/          ← Generated visualizations
 │   └── summaries/       ← Quick summaries on demand
 │
+├── sessions/            ← Session logs TẬP TRUNG từ tất cả dự án
+│   ├── hermes-agent/    ← Sessions từ Hermes-Agent
+│   ├── kenh-youtube/    ← Sessions từ kenh-youtube
+│   ├── bai-viet-mxh/    ← Sessions từ bai-viet-mxh
+│   ├── rag-notebooklm/  ← Sessions từ RAG-notebooklm
+│   └── second-brain/    ← Sessions từ Second-brain
+│
 └── AGENTS.md            ← THIS FILE — vault schema
 ```
 
@@ -49,9 +56,9 @@ llm-wiki-template/
 ---
 title: "Human-readable title"
 source: "URL, file path, or 'compiled'"  
-date_added: 2025-01-01
+date_added: 2026-04-03
 tags: [concept, ai, rag]
-aliases: [alias1, alias2]
+aliases: [alias1, alias2, tên tiếng Việt]
 status: draft | reviewed | canonical
 related:
   - "[[other-article]]"
@@ -66,14 +73,15 @@ summary: "One-line summary for _index.md"
 - Code blocks: Always specify language (```python, ```bash, etc.)
 - Headers: Start at ## (h2) inside articles (h1 = title in frontmatter)
 
-### Writing Tone — Encyclopedia Style
-- Neutral, evidence-based tone. Not a blog, not personal notes.
-- Avoid: "interestingly", "importantly", "it should be noted", "groundbreaking", "legendary"
-- Structure articles by theme, not chronologically
-- Convey emotion/opinions through direct quotes from raw sources
-- Prefer impactful quotes sparingly over scattered ones
-- 1 idea = 1 sentence. Short sentences. Write paragraphs, limit bullet-points to enumerations only.
-- Attribution over assertion: "Karpathy describes it as..." instead of "It is very..."
+### Writing Tone — Bách Khoa Toàn Thư
+- Viết giọng văn trung lập, dẫn chứng cụ thể. Không phải blog, không phải notes.
+- Tránh: "thú vị là", "đáng chú ý", "rất quan trọng", "groundbreaking", "legendary"
+- Tránh editorial voice: "interestingly", "importantly", "it should be noted"
+- Cấu trúc bài theo chủ đề (thematic), không theo dòng thời gian (chronological)
+- Cảm xúc/nhận định truyền qua direct quotes từ raw source
+- Ưu tiên quotes đắt giá, tránh quote tràn lan
+- 1 ý = 1 câu. Câu ngắn. Viết đoạn văn, hạn chế bullet-point trừ khi liệt kê.
+- Attribution thay vì assertion: "Karpathy mô tả nó là..." thay vì "Nó rất..."
 
 ## Index Maintenance
 
@@ -87,19 +95,20 @@ The file `wiki/_index.md` is the **master catalog**. Rules:
 
 When compiling from `raw/` to `wiki/`:
 1. Read the raw source completely
-2. Check `wiki/_absorb_log.json` to see which raw sources have been compiled
+2. Check `wiki/_absorb_log.json` để xem raw nào đã compile
 3. Identify key concepts, tools, and people mentioned
 4. For each:
    - Check if wiki article already exists → UPDATE
    - If not → CREATE new article
-5. **Re-read the entire wiki article BEFORE updating — non-negotiable**
-6. After re-reading, ask: "What new depth does this entry add that the article doesn't already have?"
-   - If the answer is "nothing new" → DO NOT edit the article
-7. When updating, **integrate** new content into existing narrative flow — don't just append bullet points at the end
-8. Add `[[backlinks]]` to related existing articles
-9. Update `_index.md`
-10. Update `wiki/_absorb_log.json` — record the compiled raw source
-11. Never delete content from existing articles — refine and integrate
+5. **Re-read toàn bộ bài wiki TRƯỚC KHI cập nhật — non-negotiable**
+6. Sau khi đọc lại, tự hỏi: "Entry mới bổ sung chiều sâu gì mà bài chưa có?"
+   - Nếu câu trả lời là "không gì mới" → KHÔNG sửa bài
+7. **Contradiction Check** — Trước khi ghi đè bất kỳ thông tin nào, kiểm tra xem claim mới có mâu thuẫn với claim cũ không. Nếu mâu thuẫn → KHÔNG ghi đè, thêm callout `[!warning] Mâu Thuẫn Chưa Giải Quyết` và tag `needs-review`.
+8. Khi cập nhật, **integrate** nội dung mới vào mạch viết hiện có — không chỉ append bullet point ở cuối
+9. Add `[[backlinks]]` to related existing articles
+10. Update `_index.md`
+11. Update `wiki/_absorb_log.json` — ghi nhận raw đã compile
+12. Never delete content from existing articles — refine and integrate
 
 ## Quality Standards
 
@@ -107,73 +116,78 @@ When compiling from `raw/` to `wiki/`:
 - Minimum 200 words per concept article
 - Each article should link to ≥2 other wiki articles
 - Avoid duplicating content — link instead
+- Use Vietnamese for content, English for technical terms
 
 ### Article Size Guardrails
-- **Limits:** 15–120 lines of content (excluding frontmatter)
-  - Under 15 lines → tag `status: stub`, prioritize expansion when new raw is available
-  - Over 120 lines → consider splitting sub-topics into separate articles
-- **Anti-Cramming:** If a sub-topic appears in ≥3 paragraphs within one article → split into a child article
-- **Anti-Thinning:** Don't create an article if you can't write ≥3 meaningful sentences. Every touch must make the article richer.
+- **Giới hạn:** 15–120 dòng nội dung (không tính frontmatter)
+  - Dưới 15 dòng → tag `status: stub`, ưu tiên bổ sung khi có raw mới
+  - Trên 120 dòng → xem xét tách sub-topic thành bài riêng
+- **Anti-Cramming:** Nếu sub-topic xuất hiện ≥3 đoạn trong 1 bài → tách thành bài con
+- **Anti-Thinning:** Không tạo bài nếu không viết được ≥3 câu có ý nghĩa. Mỗi lần touch bài → phải làm nó giàu hơn
 
 ### Entity-Type Templates
 
-Each wiki article type has its own structure. Use the correct template:
+Mỗi loại bài wiki có cấu trúc riêng. Dùng đúng template theo entity type:
 
 **Concept** (`wiki/concepts/`):
-- `## Definition` — 1 clear paragraph
-- `## [Thematic Sections]` — varies by topic (Architecture, Mechanism, Examples...)
-- `## Applications / Connections` — real-world context
-- `## References`
+- `## Định Nghĩa` — 1 đoạn văn rõ ràng
+- `## [Sections thematic]` — tùy chủ đề (Kiến Trúc, Cơ Chế, Ví Dụ...)
+- `## Liên Hệ / Ứng Dụng` — context thực tế
+- `## Nguồn Tham Khảo`
 
 **Tool** (`wiki/tools/`):
-- `## Overview` — what it is, who made it, purpose
-- `## Role In [Context]` — how it's used in the system
-- `## Advantages / Limitations` — neutral assessment
-- `## References`
+- `## Tổng Quan` — tool là gì, ai tạo, mục đích
+- `## Vai Trò Trong [Context]` — cách dùng trong hệ thống
+- `## Lợi Thế / Hạn Chế` — đánh giá trung lập
+- `## Nguồn Tham Khảo`
 
 **Person** (`wiki/people/`):
-- `## Biography` — 2-3 sentences of background
-- `## Contributions to This Wiki's Knowledge` — direct connection to wiki topics
-- `## References`
+- `## Tiểu Sử` — 2-3 câu background
+- `## Đóng Góp Cho Kiến Thức Trong Wiki Này` — liên hệ trực tiếp đến wiki
+- `## Nguồn Tham Khảo`
 
 **Comparison** (`wiki/comparisons/`):
-- `## Context` — why the comparison matters
-- `## Comparison Table` — clear criteria table
-- `## Analysis` — assessment across dimensions
-- `## Conclusion`
+- `## Bối Cảnh` — tại sao so sánh
+- `## Bảng So Sánh` — bảng tiêu chí rõ ràng
+- `## Phân Tích` — đánh giá từng chiều
+- `## Kết Luận`
 
 **Report/Summary** (`outputs/`):
-- `## Context` — background of the request
-- `## Analysis` — main content
-- `## Conclusion / Actions`
-- `## Sources`
+- `## Context` — bối cảnh yêu cầu
+- `## Phân Tích` — nội dung chính
+- `## Kết Luận / Hành Động`
+- `## Nguồn`
 
 ## Classify-Before-Extract
 
-Before compiling raw/ into wiki, **classify sources by type** to apply the right extraction strategy:
+Trước khi compile raw/ thành wiki, **phân loại nguồn theo type** để áp dụng extraction strategy phù hợp:
 
-| Source Type | Characteristics | Extraction Strategy |
-|-------------|----------------|-------------------|
-| **Tweet/Thread** | Short, dense, has replies | Extract main assertions + notable replies. Each valuable reply = 1 data point |
-| **Article/Gist** | Long, structured | Extract by sections. Find main thesis + supporting arguments |
-| **Paper/Report** | Formal, has abstract/methodology | Extract abstract → findings → implications. Note evidence-backed claims |
-| **Diagram/Image** | Visual | Decompose layers, components, flows. Describe in text + tables |
-| **Video/Transcript** | Long, conversational | Find key moments, impactful quotes. Skip filler/tangents |
-| **Repo/Code** | Technical | Extract architecture, patterns, API surface. README is starting point |
+| Source Type | Đặc điểm | Extraction Strategy |
+|-------------|----------|-------------------|
+| **Tweet/Thread** | Ngắn, dense, có replies | Extract assertions chính + notable replies. Mỗi reply đáng giá = 1 data point |
+| **Article/Gist** | Dài, có cấu trúc | Extract theo sections. Tìm thesis chính + supporting arguments |
+| **Paper/Report** | Formal, có abstract/methodology | Extract abstract → findings → implications. Chú ý claims có evidence |
+| **Diagram/Image** | Visual | Bóc tách layers, components, flows. Mô tả bằng text + tables |
+| **Video/Transcript** | Dài, conversational | Tìm key moments, quotes đắt giá. Bỏ filler/tangents |
+| **Repo/Code** | Technical | Extract architecture, patterns, API surface. README là starting point |
 
-**Rule:** Don't treat all raw sources the same. A 50-page report needs a different strategy than a 5-tweet thread.
+**Quy tắc:** Không xử lý mọi raw giống nhau. Report 50 trang cần strategy khác thread 5 tweets.
 
 ## Operations Log
 
-File `wiki/_ops_log.md` records **all operations** chronologically:
-- Append one line `## [YYYY-MM-DD] action | title` after each ingest, compile, ask, cleanup
-- NEVER edit old entries — only append
-- Workflows `/ingest`, `/compile`, `/ask`, `/cleanup` MUST append to the log
+File `wiki/_ops_log.md` ghi lại **mọi operations** theo thời gian:
+- Append 1 dòng `## [YYYY-MM-DD] action | title` sau mỗi ingest, compile, ask, cleanup
+- KHÔNG sửa entries cũ — chỉ append
+- Các workflows `/ingest`, `/compile`, `/ask`, `/cleanup` PHẢI append vào log
 
 ## Dual Output Rule
 
-Any task that produces knowledge (Q&A, analysis, comparison) should consider producing **2 outputs**:
-1. **Output 1:** Direct answer to the user
-2. **Output 2:** Update wiki if the answer contains new insights not yet in wiki
+Mọi task tạo ra kiến thức (hỏi đáp, phân tích, so sánh) phải xem xét produce **2 outputs**:
+1. **Output 1:** Trả lời trực tiếp cho user
+2. **Output 2:** Cập nhật wiki nếu câu trả lời chứa insight mới chưa có trong wiki
 
-Rule: If `/ask` generates a valuable synthesis → ask the user if they want to file it back into the wiki.
+Quy tắc: Nếu `/ask` tạo ra synthesis có giá trị → hỏi user có muốn file-back vào wiki không.
+
+## AutoResearch
+
+Workflow `/autoresearch [chủ đề]` tự động search web, đánh giá nguồn, ingest vào raw/, và tạo báo cáo tổng hợp. Cấu hình tại `raw/_research_program.md`. Output lưu tại `outputs/reports/`. Compile vào wiki CHỈ khi user đồng ý.

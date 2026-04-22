@@ -58,7 +58,29 @@ Cho mỗi tài liệu (đã classify):
    - Kiểm tra wiki article đã tồn tại chưa
    - Nếu **chưa có** VÀ viết được ≥3 câu có ý nghĩa → Tạo bài mới (dùng Entity-Type Template từ AGENTS.md)
    - Nếu **chưa có** VÀ chưa đủ chất liệu → Ghi nhận, chờ raw mới
-   - Nếu **đã có** → Chuyển sang bước 5
+   - Nếu **đã có** → Chuyển sang bước 4.5
+
+### 4.5. Contradiction Check (TRƯỚC KHI cập nhật)
+
+Khi bài wiki **đã tồn tại** và raw mới chứa thông tin về cùng chủ đề:
+
+1. **Extract claims** từ raw mới — liệt kê các khẳng định cụ thể (số liệu, quy trình, attribute).
+2. **So sánh với wiki hiện có** — đọc bài wiki, tìm claims tương ứng.
+3. **Phân loại khác biệt:**
+   - **Temporal update** (phiên bản mới, ngày mới) → Không phải mâu thuẫn. Cập nhật bình thường ở Bước 5.
+   - **Bổ sung** (wiki chưa có thông tin này) → Không phải mâu thuẫn. Integrate ở Bước 5.
+   - **Mâu thuẫn thật** (cùng attribute, khác giá trị, cùng thời điểm) → Tiếp bước 4.
+4. **Xử lý mâu thuẫn:**
+   - **KHÔNG ghi đè** claim cũ
+   - Thêm callout Obsidian ngay dưới đoạn liên quan trong bài wiki:
+     ```markdown
+     > [!warning] Mâu Thuẫn Chưa Giải Quyết
+     > **Claim mới:** [nội dung] (Nguồn: [[raw/path]])
+     > **Claim cũ:** [nội dung] (Nguồn: [[raw/path]])
+     > **Cần review:** [gợi ý cách xác minh]
+     ```
+   - Đổi frontmatter `status:` thành `needs-review`
+   - Ghi nhận vào danh sách contradictions cho báo cáo (Bước 12)
 
 ### 5. Re-read — TRƯỚC KHI cập nhật bài wiki (NON-NEGOTIABLE)
 
@@ -171,12 +193,16 @@ Append vào `wiki/_ops_log.md`:
 ### Bài KHÔNG cập nhật (không có gì mới):
 - [[article]] — lý do skip
 
+### ⚠️ Mâu thuẫn phát hiện:
+- [[bài-wiki]] — [claim mới] vs [claim cũ] — cần review
+
 ### Thuật ngữ mới:
 - Term 1, Term 2
 
 ### Thống kê:
 - Tổng bài wiki: [N]
 - Tổng thuật ngữ: [N]
+- Contradictions: [C]
 - Raw đã compile: [M]/[Total raw files]
 ```
 

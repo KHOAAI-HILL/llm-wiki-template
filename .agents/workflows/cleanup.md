@@ -73,7 +73,12 @@ Kiểm tra vi phạm tone Bách Khoa Toàn Thư:
 #### 2.7 Frontmatter
 - Có đủ fields bắt buộc? (title, source, date_added, tags, aliases, status, related, summary)
 - `aliases` có đủ? Có bao gồm tên tiếng Việt và viết tắt phổ biến?
-- `status` chính xác? (stub/draft/reviewed/canonical)
+- `status` chính xác? (stub/draft/reviewed/canonical/needs-review)
+
+#### 2.8 Contradiction Backlog
+- Quét callout `[!warning] Mâu Thuẫn Chưa Giải Quyết` trong bài
+- Nếu còn tồn tại → liệt kê trong báo cáo cleanup, đánh dấu ưu tiên review
+- Nếu bài có `status: needs-review` → hiển thị rõ ràng cho người dùng
 
 ### Phase 3: Sửa Chữa
 

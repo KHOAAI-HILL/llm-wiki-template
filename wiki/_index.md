@@ -52,6 +52,7 @@ summary: "Master index listing all wiki articles with summaries and aliases"
 
 | File | Purpose |
 |------|---------|
+| `overview.md` | Executive summary for cross-project access |
 | `_index.md` | Master index (this file) |
 | `_glossary.md` | Term glossary |
 | `_absorb_log.json` | Tracks which raw sources have been compiled |
