@@ -21,3 +21,9 @@ desktop.ini
 # Python
 __pycache__/
 *.pyc
+
+# Auto-generated graph data
+wiki/_graph.json
+
+# Sync automation
+sync-log.txt

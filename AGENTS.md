@@ -55,7 +55,7 @@ Second-brain/
 ```yaml
 ---
 title: "Human-readable title"
-source: "URL, file path, or 'compiled'"  
+sources: ["[[raw/source-1.md]]", "[[raw/source-2.md]]"]  
 date_added: 2026-04-03
 tags: [concept, ai, rag]
 aliases: [alias1, alias2, tên tiếng Việt]
@@ -191,3 +191,20 @@ Quy tắc: Nếu `/ask` tạo ra synthesis có giá trị → hỏi user có mu�
 ## AutoResearch
 
 Workflow `/autoresearch [chủ đề]` tự động search web, đánh giá nguồn, ingest vào raw/, và tạo báo cáo tổng hợp. Cấu hình tại `raw/_research_program.md`. Output lưu tại `outputs/reports/`. Compile vào wiki CHỈ khi user đồng ý.
+
+## Agent Integrations
+
+This vault can be connected to external AI agents for autonomous access:
+
+### Hermes Agent
+See `integrations/hermes/` for:
+- `SKILL.md` — Drop-in skill for Hermes to read the wiki
+- `SOUL-snippet.md` — System prompt additions
+- `scripts/` — Sync scripts (bash + PowerShell + Python wrapper)
+- `docker/` — Deployment snippets for Docker/Railway
+
+The integration is read-only by design. Hermes can query the wiki but cannot modify it. All writes go through the local AI agent via `/ingest` and `/compile` workflows.
+
+### Other Integrations (Coming Soon)
+- `integrations/claude-code/` — Placeholder
+- `integrations/gemini-cli/` — Placeholder

@@ -1,0 +1,7 @@
+# Add to your Hermes cron config to auto-sync wiki
+# Hermes location: $HERMES_HOME/cron/sync-brain.yaml
+name: sync-brain
+schedule: "0 */6 * * *"  # Every 6 hours
+script: scripts/sync_brain.py
+description: "Pull latest Second Brain wiki from GitHub"
+enabled: true
