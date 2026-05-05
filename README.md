@@ -35,7 +35,7 @@ The result is a **100% inspectable**, file-based knowledge system where you can 
 
 - 📂 **File-based architecture** — Markdown files, no databases, no vendor lock-in
 - 🔍 **100% inspectable** — Every piece of knowledge is a readable `.md` file
-- 🔄 **8 automated workflows** — `/ingest`, `/compile`, `/ask`, `/cleanup`, `/breakdown`, `/autoresearch`, `/save`, `/overview`
+- 🔄 **10 automated workflows** — `/ingest`, `/compile`, `/ask`, `/cleanup`, `/breakdown`, `/autoresearch`, `/save`, `/overview`, `/startup`, `/wrapup`
 - 🔬 **Autonomous research** — Agent searches the web, evaluates sources, and ingests automatically
 - ⚖️ **Contradiction detection** — Flags conflicting claims instead of silently overwriting
 - 💾 **Chat-to-Wiki pipeline** — Save knowledge from conversations directly to wiki
@@ -141,6 +141,8 @@ The agent reads `AGENTS.md` as its operating manual — no additional configurat
 | `/breakdown` | Scans wiki for missing entities and proposes new articles |
 | `/autoresearch` | 🆕 **Autonomous research** — searches the web, evaluates sources, ingests, and synthesizes reports |
 | `/save` | 🆕 **Chat-to-Wiki** — extracts knowledge from conversations and saves directly to wiki |
+| `/startup` | 🆕 **Project Brain Startup** — AI recalls context from previous sessions |
+| `/wrapup` | 🆕 **Project Wrapup** — AI saves session archive and updates rolling context |
 
 Each workflow is defined in `.agents/workflows/` and can be customized.
 
@@ -192,16 +194,23 @@ llm-wiki-template/
 ├── README.md                ← This file
 ├── .gitignore
 │
-├── .agents/workflows/       ← 8 automated workflows
+├── .agents/workflows/       ← 10 automated workflows
 │   ├── ask.md
 │   ├── autoresearch.md      ← 🆕 Autonomous research
 │   ├── breakdown.md
 │   ├── cleanup.md           ← Updated: contradiction backlog scanning
 │   ├── compile.md           ← Updated: contradiction detection (Step 4.5)
 │   ├── ingest.md
-│   └── save.md              ← 🆕 Chat-to-Wiki pipeline
+│   ├── save.md              ← 🆕 Chat-to-Wiki pipeline
+│   ├── startup.md           ← 🆕 Session startup
+│   └── wrapup.md            ← 🆕 Session wrapup
 │
 ├── .obsidian/               ← Obsidian config (pre-configured)
+│
+├── sessions/                ← Session logs (AI Memory)
+│   ├── current-context.md   ← Rolling context (auto-updated)
+│   ├── .hot-buffer.md       ← Mid-session decisions buffer
+│   └── session-summary-*.md ← Archive of each session
 │
 ├── raw/                     ← Your source documents
 │   ├── _ingest.py           ← Batch ingest script (Python)

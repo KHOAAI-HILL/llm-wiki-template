@@ -33,12 +33,10 @@ Second-brain/
 │   ├── charts/          ← Generated visualizations
 │   └── summaries/       ← Quick summaries on demand
 │
-├── sessions/            ← Session logs TẬP TRUNG từ tất cả dự án
-│   ├── hermes-agent/    ← Sessions từ Hermes-Agent
-│   ├── kenh-youtube/    ← Sessions từ kenh-youtube
-│   ├── bai-viet-mxh/    ← Sessions từ bai-viet-mxh
-│   ├── rag-notebooklm/  ← Sessions từ RAG-notebooklm
-│   └── second-brain/    ← Sessions từ Second-brain
+├── sessions/            ← Session logs (AI Memory)
+│   ├── current-context.md ← Rolling context (do /wrapup tạo)
+│   ├── .hot-buffer.md   ← Tạm lưu các quyết định giữa phiên
+│   └── session-summary-*.md ← Archive tóm tắt từng phiên
 │
 └── AGENTS.md            ← THIS FILE — vault schema
 ```
@@ -187,6 +185,13 @@ Mọi task tạo ra kiến thức (hỏi đáp, phân tích, so sánh) phải xe
 2. **Output 2:** Cập nhật wiki nếu câu trả lời chứa insight mới chưa có trong wiki
 
 Quy tắc: Nếu `/ask` tạo ra synthesis có giá trị → hỏi user có muốn file-back vào wiki không.
+
+## Session Lifecycle (AI Memory)
+
+Mỗi phiên làm việc của Agent trong vault này phải tuân thủ vòng đời **Startup ↔ Wrapup** để duy trì trí nhớ:
+1. **Đầu phiên (Startup):** Agent TỰ ĐỘNG chạy `/startup` (hoặc người dùng gọi) để đọc file `sessions/current-context.md` nhằm nhớ lại ngữ cảnh dang dở.
+2. **Giữa phiên (Hot Buffer):** Các quyết định quan trọng được Agent lặng lẽ append vào `sessions/.hot-buffer.md` để chống crash.
+3. **Cuối phiên (Wrapup):** Agent tự động nhắc `/wrapup` khi có tín hiệu kết thúc. Nếu đồng ý, Agent sẽ tổng hợp, ghi archive vào `session-summary-YYYY-MM-DD.md`, và cập nhật file `current-context.md`.
 
 ## AutoResearch
 

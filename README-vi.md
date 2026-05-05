@@ -36,7 +36,7 @@ Kết quả là một hệ thống kiến thức **100% kiểm tra được**, d
 
 - 📂 **Kiến trúc file** — File Markdown, không database, không phụ thuộc nhà cung cấp
 - 🔍 **100% kiểm tra được** — Mọi kiến thức là file `.md` đọc được
-- 🔄 **8 workflow tự động** — `/ingest`, `/compile`, `/ask`, `/cleanup`, `/breakdown`, `/autoresearch`, `/save`, `/overview`
+- 🔄 **10 workflow tự động** — `/ingest`, `/compile`, `/ask`, `/cleanup`, `/breakdown`, `/autoresearch`, `/save`, `/overview`, `/startup`, `/wrapup`
 - 🔬 **Nghiên cứu tự động** — Agent tự tìm kiếm web, đánh giá nguồn, và nạp tự động
 - ⚖️ **Phát hiện mâu thuẫn** — Đánh dấu các claim xung đột thay vì ghi đè im lặng
 - 💾 **Chat-to-Wiki** — Lưu kiến thức từ cuộc hội thoại trực tiếp vào wiki
@@ -142,6 +142,8 @@ Agent đọc `AGENTS.md` như sổ tay vận hành — không cần cấu hình 
 | `/breakdown` | Quét wiki tìm entity còn thiếu và đề xuất bài mới |
 | `/autoresearch` | 🆕 **Nghiên cứu tự động** — tìm kiếm web, đánh giá nguồn, nạp, và tổng hợp báo cáo |
 | `/save` | 🆕 **Chat-to-Wiki** — trích xuất kiến thức từ cuộc hội thoại và lưu thẳng vào wiki |
+| `/startup` | 🆕 **Khởi động bộ não** — AI tự nhớ lại ngữ cảnh từ các phiên làm việc trước |
+| `/wrapup` | 🆕 **Tổng kết phiên** — AI lưu trữ tóm tắt phiên và cập nhật ngữ cảnh làm việc |
 
 Mỗi workflow được định nghĩa trong `.agents/workflows/` và có thể tùy chỉnh.
 
@@ -194,16 +196,23 @@ llm-wiki-template/
 ├── README-vi.md             ← File này (tiếng Việt)
 ├── .gitignore
 │
-├── .agents/workflows/       ← 8 workflow tự động
+├── .agents/workflows/       ← 10 workflow tự động
 │   ├── ask.md
 │   ├── autoresearch.md      ← 🆕 Nghiên cứu tự động
 │   ├── breakdown.md
 │   ├── cleanup.md           ← Cập nhật: quét mâu thuẫn tồn đọng
 │   ├── compile.md           ← Cập nhật: phát hiện mâu thuẫn (Bước 4.5)
 │   ├── ingest.md
-│   └── save.md              ← 🆕 Pipeline Chat-to-Wiki
+│   ├── save.md              ← 🆕 Pipeline Chat-to-Wiki
+│   ├── startup.md           ← 🆕 Khởi động phiên làm việc
+│   └── wrapup.md            ← 🆕 Tổng kết phiên làm việc
 │
 ├── .obsidian/               ← Cấu hình Obsidian (đã thiết lập sẵn)
+│
+├── sessions/                ← Session logs (AI Memory)
+│   ├── current-context.md   ← Ngữ cảnh hiện tại (cập nhật tự động)
+│   ├── .hot-buffer.md       ← Bộ đệm quyết định giữa phiên
+│   └── session-summary-*.md ← Archive tóm tắt từng phiên
 │
 ├── raw/                     ← Tài liệu gốc của bạn
 │   ├── _ingest.py           ← Script nạp hàng loạt (Python)
