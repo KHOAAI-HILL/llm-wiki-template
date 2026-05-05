@@ -192,6 +192,7 @@ The template enforces several quality mechanisms:
 llm-wiki-template/
 ├── AGENTS.md                ← Agent operating manual (the brain)
 ├── README.md                ← This file
+├── update.py                ← 🆕 One-command updater script
 ├── .gitignore
 │
 ├── .agents/workflows/       ← 10 automated workflows
@@ -288,6 +289,29 @@ python raw/_ingest.py ~/Downloads/research-notes/
 
 # Preview without creating files
 python raw/_ingest.py big-folder/ --dry-run
+```
+
+## Updating Your Vault
+
+Already using the template? Update to the latest workflows with a single command:
+
+```bash
+# Preview what will change (safe, no writes)
+python update.py --dry-run
+
+# Apply updates (will ask for confirmation)
+python update.py
+
+# Apply without asking
+python update.py --force
+```
+
+The update script **only touches system files** (workflows, `AGENTS.md`). Your personal data (`raw/`, `wiki/`, `sessions/`, `outputs/`) is **never modified**.
+
+If you don't have the script yet, download it:
+
+```bash
+curl -o update.py https://raw.githubusercontent.com/KHOAAI-HILL/llm-wiki-template/master/update.py
 ```
 
 ## Philosophy

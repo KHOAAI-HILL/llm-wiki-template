@@ -194,6 +194,7 @@ llm-wiki-template/
 ├── AGENTS.md                ← Sổ tay vận hành cho Agent (bộ não)
 ├── README.md                ← README tiếng Anh
 ├── README-vi.md             ← File này (tiếng Việt)
+├── update.py                ← 🆕 Script cập nhật 1 lệnh
 ├── .gitignore
 │
 ├── .agents/workflows/       ← 10 workflow tự động
@@ -290,6 +291,29 @@ python raw/_ingest.py ~/Downloads/research-notes/
 
 # Xem trước không tạo file
 python raw/_ingest.py big-folder/ --dry-run
+```
+
+## Cập Nhật Vault
+
+Đã dùng template từ trước? Cập nhật lên phiên bản mới nhất chỉ với 1 lệnh:
+
+```bash
+# Xem trước thay đổi (an toàn, không ghi file)
+python update.py --dry-run
+
+# Áp dụng cập nhật (có hỏi xác nhận)
+python update.py
+
+# Áp dụng không hỏi
+python update.py --force
+```
+
+Script chỉ cập nhật **file hệ thống** (workflows, `AGENTS.md`). Dữ liệu cá nhân (`raw/`, `wiki/`, `sessions/`, `outputs/`) **không bao giờ bị chạm vào**.
+
+Nếu chưa có script, tải về:
+
+```bash
+curl -o update.py https://raw.githubusercontent.com/KHOAAI-HILL/llm-wiki-template/master/update.py
 ```
 
 ## Triết Lý
