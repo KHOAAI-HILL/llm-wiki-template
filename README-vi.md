@@ -297,24 +297,33 @@ python raw/_ingest.py big-folder/ --dry-run
 
 Đã dùng template từ trước? Cập nhật lên phiên bản mới nhất chỉ với 1 lệnh:
 
+### Cách A: `brain` CLI (Khuyên dùng)
+
+Cài 1 lần:
 ```bash
-# Xem trước thay đổi (an toàn, không ghi file)
-python update.py --dry-run
-
-# Áp dụng cập nhật (có hỏi xác nhận)
-python update.py
-
-# Áp dụng không hỏi
-python update.py --force
+pip install git+https://github.com/KHOAAI-HILL/llm-wiki-template.git
 ```
 
-Script chỉ cập nhật **file hệ thống** (workflows, `AGENTS.md`). Dữ liệu cá nhân (`raw/`, `wiki/`, `sessions/`, `outputs/`) **không bao giờ bị chạm vào**.
+Sau đó dùng mọi lúc trong vault:
+```bash
+brain update              # Cập nhật (có hỏi xác nhận)
+brain update --dry-run    # Xem trước thay đổi
+brain update --force      # Cập nhật không hỏi
+brain status              # Kiểm tra sức khỏe vault
+brain version             # Hiển thị phiên bản
+```
 
-Nếu chưa có script, tải về:
+### Cách B: Script đơn lẻ (Không cần cài)
 
 ```bash
+# Tải script
 curl -o update.py https://raw.githubusercontent.com/KHOAAI-HILL/llm-wiki-template/master/update.py
+
+# Chạy
+python update.py
 ```
+
+Cả hai cách đều chỉ cập nhật **file hệ thống** (workflows, `AGENTS.md`). Dữ liệu cá nhân (`raw/`, `wiki/`, `sessions/`, `outputs/`) **không bao giờ bị chạm vào**.
 
 ## Triết Lý
 

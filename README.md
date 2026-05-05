@@ -295,24 +295,33 @@ python raw/_ingest.py big-folder/ --dry-run
 
 Already using the template? Update to the latest workflows with a single command:
 
+### Option A: `brain` CLI (Recommended)
+
+Install once:
 ```bash
-# Preview what will change (safe, no writes)
-python update.py --dry-run
-
-# Apply updates (will ask for confirmation)
-python update.py
-
-# Apply without asking
-python update.py --force
+pip install git+https://github.com/KHOAAI-HILL/llm-wiki-template.git
 ```
 
-The update script **only touches system files** (workflows, `AGENTS.md`). Your personal data (`raw/`, `wiki/`, `sessions/`, `outputs/`) is **never modified**.
+Then use anywhere inside your vault:
+```bash
+brain update              # Update (asks for confirmation)
+brain update --dry-run    # Preview changes without writing
+brain update --force      # Update without asking
+brain status              # Check vault health
+brain version             # Show version
+```
 
-If you don't have the script yet, download it:
+### Option B: Standalone script (No install)
 
 ```bash
+# Download the script
 curl -o update.py https://raw.githubusercontent.com/KHOAAI-HILL/llm-wiki-template/master/update.py
+
+# Run it
+python update.py
 ```
+
+Both methods **only touch system files** (workflows, `AGENTS.md`). Your personal data (`raw/`, `wiki/`, `sessions/`, `outputs/`) is **never modified**.
 
 ## Philosophy
 

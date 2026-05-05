@@ -21,6 +21,9 @@ desktop.ini
 # Python
 __pycache__/
 *.pyc
+*.egg-info/
+dist/
+build/
 
 # Auto-generated graph data
 wiki/_graph.json
