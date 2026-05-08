@@ -39,7 +39,7 @@ The result is a **100% inspectable**, file-based knowledge system where you can 
 - 🔬 **Autonomous research** — Agent searches the web, evaluates sources, and ingests automatically
 - ⚖️ **Contradiction detection** — Flags conflicting claims instead of silently overwriting
 - 💾 **Chat-to-Wiki pipeline** — Save knowledge from conversations directly to wiki
-- 🔌 **Integrated MCP Server** — Standard MCP API (Model Context Protocol) with FTS5 search for AI agents
+- 🔌 **Integrated MCP Server** — Standard MCP API (Model Context Protocol) with FTS5 search for AI agents (Secure `127.0.0.1` bind)
 - 🕸️ **Knowledge Graph** — Automated analysis and visualization of knowledge links (God nodes, Orphans)
 - 📊 **Self-maintaining indexes** — Master index, glossary, backlinks, executive overview, operations log
 - 🛡️ **Quality gates** — Article size guardrails, anti-cramming/thinning rules, re-read checks
@@ -210,13 +210,15 @@ llm-wiki-template/
 │   └── wrapup.md            ← 🆕 Session wrapup
 │
 ├── integrations/mcp/        ← 🆕 MCP Server Integration
-│   ├── server.py            ← FastMCP Server
+│   ├── README.md            ← MCP Setup Guide
 │   └── config-sample.json   ← Sample config for Claude/Cursor
 │
 ├── scripts/                 ← 🆕 Agent-Native Tooling
-│   ├── brain.py             ← Multi-purpose router (Search, Index, Health, etc.)
+│   ├── brain.py             ← Central CLI Router (Search, Index, Health, MCP)
+│   ├── brain_mcp.py         ← FastMCP Server (Secure 127.0.0.1 bind)
+│   ├── brain_db.py          ← SQLite Database abstraction
 │   ├── build_search_index.py← FTS5 Indexing
-│   └── ...                  ← Other tools
+│   └── ...                  ← Other tools (audit, resolve_orphans, etc.)
 │
 ├── .obsidian/               ← Obsidian config (pre-configured)
 │

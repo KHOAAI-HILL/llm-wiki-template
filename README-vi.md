@@ -40,7 +40,7 @@ Kết quả là một hệ thống kiến thức **100% kiểm tra được**, d
 - 🔬 **Nghiên cứu tự động** — Agent tự tìm kiếm web, đánh giá nguồn, và nạp tự động
 - ⚖️ **Phát hiện mâu thuẫn** — Đánh dấu các claim xung đột thay vì ghi đè im lặng
 - 💾 **Chat-to-Wiki** — Lưu kiến thức từ cuộc hội thoại trực tiếp vào wiki
-- 🔌 **MCP Server Tích Hợp** — API chuẩn MCP (Model Context Protocol) với FTS5 search cho AI agent
+- 🔌 **MCP Server Tích Hợp** — API chuẩn MCP (Model Context Protocol) với FTS5 search cho AI agent (Bind `127.0.0.1` bảo mật)
 - 🕸️ **Knowledge Graph** — Tự động phân tích và trực quan hóa liên kết tri thức (God nodes, Orphans)
 - 📊 **Index tự bảo trì** — Master index, glossary, backlinks, executive overview, operations log
 - 🛡️ **Cổng chất lượng** — Giới hạn kích thước bài, chống nhồi nhét/mỏng quá, kiểm tra lại trước khi sửa
@@ -212,13 +212,15 @@ llm-wiki-template/
 │   └── wrapup.md            ← 🆕 Tổng kết phiên làm việc
 │
 ├── integrations/mcp/        ← 🆕 Tích hợp MCP Server
-│   ├── server.py            ← FastMCP Server
+│   ├── README.md            ← Hướng dẫn cài đặt MCP
 │   └── config-sample.json   ← Cấu hình mẫu cho Claude/Cursor
 │
 ├── scripts/                 ← 🆕 Agent-Native Tooling
-│   ├── brain.py             ← Router đa năng (Search, Index, Health, v.v.)
+│   ├── brain.py             ← Router CLI trung tâm (Search, Index, Health, MCP)
+│   ├── brain_mcp.py         ← FastMCP Server (Bind 127.0.0.1 an toàn)
+│   ├── brain_db.py          ← SQLite Database abstraction
 │   ├── build_search_index.py← FTS5 Indexing
-│   └── ...                  ← Các tool khác
+│   └── ...                  ← Các tool khác (audit, resolve_orphans, v.v.)
 │
 ├── .obsidian/               ← Cấu hình Obsidian (đã thiết lập sẵn)
 │
