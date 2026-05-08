@@ -3,6 +3,53 @@
 > This file is the **single source of truth** for any LLM operating on this vault.
 > Read this FIRST before making any changes.
 
+## ⚠️ KNOWN PLATFORM BUGS (Mẹo Tùy Chọn)
+
+> [!tip] Vấn đề với `grep_search` trên các Vault lớn (như OneDrive)
+> Ở một số môi trường có hàng ngàn file hoặc đồng bộ cloud, tool `grep_search` có thể bị timeout.
+> Nếu gặp lỗi "context canceled", hãy chuyển sang dùng PowerShell `Select-String` hoặc FTS5.
+
+**Workaround — Dùng PowerShell `Select-String`:**
+```powershell
+# Tìm kiếm text trong toàn bộ wiki (bao gồm sub-folder, không phân biệt hoa thường)
+Get-ChildItem -Path ".\wiki" -Filter "*.md" -Recurse | Select-String -Pattern "từ_khóa" -Encoding utf8
+
+# Tìm trong raw/
+Get-ChildItem -Path ".\raw" -Filter "*.md" -Recurse | Select-String -Pattern "từ_khóa" -Encoding utf8
+```
+
+**Chiến lược tìm kiếm ưu tiên:**
+1. **Ưu tiên 1 (MCP):** Gọi tool `search_knowledge(query="từ_khóa")` — nhanh nhất, chính xác nhất qua FTS5.
+2. **Ưu tiên 2 (MCP):** Đọc resource `brain://wiki/index` — lấy Master catalog.
+3. **Ưu tiên 3 (MCP):** Đọc resource `brain://wiki/{article}` — lấy bài cụ thể.
+4. **Fallback 1 (Khi không có MCP):** `view_file` trên `index.md` → scan aliases/summary → `view_file` bài cụ thể.
+5. **Fallback 2 (Khi không có MCP):** `run_command` với PowerShell `Select-String` (như trên).
+
+## MCP Server Integration
+
+Second Brain cung cấp MCP Server (`second-brain`) cho các AI Agent kết nối trực tiếp.
+
+### Cấu hình
+Xem `integrations/mcp/config-sample.json` và `integrations/mcp/README.md`.
+
+### Tools khả dụng
+| Tool | Mô tả | Read/Write |
+|------|--------|-----------|
+| `search_knowledge` | FTS5 full-text search (sessions, wiki) | Read |
+| `rebuild_index` | Rebuild FTS5 index | Write |
+| `check_health` | Wiki audit + health score | Read |
+| `find_wiki_orphans` | Tìm bài mồ côi, tùy chọn auto-fix | Read/Write |
+| `mark_duplicate_raws`| Đánh dấu raw trùng lặp | Read/Write |
+| `ingest_codebase` | Trích xuất AST repo | Write |
+
+### Resources
+| URI | Mô tả |
+|-----|--------|
+| `brain://wiki/index` | Master Index |
+| `brain://wiki/{article}` | Bài wiki cụ thể theo tên |
+
+Khi Agent có hỗ trợ MCP, **luôn ưu tiên** dùng tools/resources trên thay vì gọi subprocess.
+
 ## Purpose
 
 This Obsidian vault is an **AI-managed knowledge base** following the Karpathy LLM Knowledge Base methodology. The LLM writes and maintains all wiki content. The human rarely edits directly — they ingest raw data, ask questions, and review outputs.
@@ -20,8 +67,8 @@ Second-brain/
 │   └── misc/            ← Images, CSV, datasets, other
 │
 ├── wiki/                ← Compiled knowledge. AI-maintained.
-│   ├── _index.md        ← Master index (MUST stay updated)
-│   ├── _glossary.md     ← Key terms and definitions
+│   ├── index.md         ← Master index (MUST stay updated)
+│   ├── glossary.md      ← Key terms and definitions
 │   ├── concepts/        ← Concept articles (the core)
 │   ├── tools/           ← Tool/product evaluations
 │   ├── people/          ← Notable people profiles
@@ -33,10 +80,12 @@ Second-brain/
 │   ├── charts/          ← Generated visualizations
 │   └── summaries/       ← Quick summaries on demand
 │
-├── sessions/            ← Session logs (AI Memory)
-│   ├── current-context.md ← Rolling context (do /wrapup tạo)
-│   ├── .hot-buffer.md   ← Tạm lưu các quyết định giữa phiên
-│   └── session-summary-*.md ← Archive tóm tắt từng phiên
+├── sessions/            ← Session logs TẬP TRUNG từ tất cả dự án
+│   ├── hermes-agent/    ← Sessions từ Hermes-Agent
+│   ├── kenh-youtube/    ← Sessions từ kenh-youtube
+│   ├── bai-viet-mxh/    ← Sessions từ bai-viet-mxh
+│   ├── rag-notebooklm/  ← Sessions từ RAG-notebooklm
+│   └── second-brain/    ← Sessions từ Second-brain
 │
 └── AGENTS.md            ← THIS FILE — vault schema
 ```
@@ -53,7 +102,7 @@ Second-brain/
 ```yaml
 ---
 title: "Human-readable title"
-sources: ["[[raw/source-1.md]]", "[[raw/source-2.md]]"]  
+sources: ["[[raw/source-1.md]]", "[[raw/source-2.md]]"]
 date_added: 2026-04-03
 tags: [concept, ai, rag]
 aliases: [alias1, alias2, tên tiếng Việt]
@@ -61,7 +110,7 @@ status: draft | reviewed | canonical
 related:
   - "[[other-article]]"
   - "[[another-one]]"
-summary: "One-line summary for _index.md"
+summary: "One-line summary for index.md"
 ---
 ```
 
@@ -83,17 +132,17 @@ summary: "One-line summary for _index.md"
 
 ## Index Maintenance
 
-The file `wiki/_index.md` is the **master catalog**. Rules:
+The file `wiki/index.md` is the **master catalog**. Rules:
 1. MUST list every article in `wiki/` with one-line summary
 2. Group by subdirectory (concepts, tools, people, comparisons)
-3. Update `_index.md` EVERY time a wiki article is added/removed
+3. Update `index.md` EVERY time a wiki article is added/removed
 4. Include article count and last-updated timestamp
 
 ## Compilation Rules
 
 When compiling from `raw/` to `wiki/`:
 1. Read the raw source completely
-2. Check `wiki/_absorb_log.json` để xem raw nào đã compile
+2. Check `wiki/absorb-log.json` để xem raw nào đã compile
 3. Identify key concepts, tools, and people mentioned
 4. For each:
    - Check if wiki article already exists → UPDATE
@@ -104,8 +153,8 @@ When compiling from `raw/` to `wiki/`:
 7. **Contradiction Check** — Trước khi ghi đè bất kỳ thông tin nào, kiểm tra xem claim mới có mâu thuẫn với claim cũ không. Nếu mâu thuẫn → KHÔNG ghi đè, thêm callout `[!warning] Mâu Thuẫn Chưa Giải Quyết` và tag `needs-review`.
 8. Khi cập nhật, **integrate** nội dung mới vào mạch viết hiện có — không chỉ append bullet point ở cuối
 9. Add `[[backlinks]]` to related existing articles
-10. Update `_index.md`
-11. Update `wiki/_absorb_log.json` — ghi nhận raw đã compile
+10. Update `index.md`
+11. Update `wiki/absorb-log.json` — ghi nhận raw đã compile
 12. Never delete content from existing articles — refine and integrate
 
 ## Quality Standards
@@ -173,7 +222,7 @@ Trước khi compile raw/ thành wiki, **phân loại nguồn theo type** để 
 
 ## Operations Log
 
-File `wiki/_ops_log.md` ghi lại **mọi operations** theo thời gian:
+File `wiki/ops-log.md` ghi lại **mọi operations** theo thời gian:
 - Append 1 dòng `## [YYYY-MM-DD] action | title` sau mỗi ingest, compile, ask, cleanup
 - KHÔNG sửa entries cũ — chỉ append
 - Các workflows `/ingest`, `/compile`, `/ask`, `/cleanup` PHẢI append vào log
@@ -185,13 +234,6 @@ Mọi task tạo ra kiến thức (hỏi đáp, phân tích, so sánh) phải xe
 2. **Output 2:** Cập nhật wiki nếu câu trả lời chứa insight mới chưa có trong wiki
 
 Quy tắc: Nếu `/ask` tạo ra synthesis có giá trị → hỏi user có muốn file-back vào wiki không.
-
-## Session Lifecycle (AI Memory)
-
-Mỗi phiên làm việc của Agent trong vault này phải tuân thủ vòng đời **Startup ↔ Wrapup** để duy trì trí nhớ:
-1. **Đầu phiên (Startup):** Agent TỰ ĐỘNG chạy `/startup` (hoặc người dùng gọi) để đọc file `sessions/current-context.md` nhằm nhớ lại ngữ cảnh dang dở.
-2. **Giữa phiên (Hot Buffer):** Các quyết định quan trọng được Agent lặng lẽ append vào `sessions/.hot-buffer.md` để chống crash.
-3. **Cuối phiên (Wrapup):** Agent tự động nhắc `/wrapup` khi có tín hiệu kết thúc. Nếu đồng ý, Agent sẽ tổng hợp, ghi archive vào `session-summary-YYYY-MM-DD.md`, và cập nhật file `current-context.md`.
 
 ## AutoResearch
 
@@ -209,7 +251,3 @@ See `integrations/hermes/` for:
 - `docker/` — Deployment snippets for Docker/Railway
 
 The integration is read-only by design. Hermes can query the wiki but cannot modify it. All writes go through the local AI agent via `/ingest` and `/compile` workflows.
-
-### Other Integrations (Coming Soon)
-- `integrations/claude-code/` — Placeholder
-- `integrations/gemini-cli/` — Placeholder

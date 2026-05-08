@@ -39,6 +39,8 @@ The result is a **100% inspectable**, file-based knowledge system where you can 
 - 🔬 **Autonomous research** — Agent searches the web, evaluates sources, and ingests automatically
 - ⚖️ **Contradiction detection** — Flags conflicting claims instead of silently overwriting
 - 💾 **Chat-to-Wiki pipeline** — Save knowledge from conversations directly to wiki
+- 🔌 **Integrated MCP Server** — Standard MCP API (Model Context Protocol) with FTS5 search for AI agents
+- 🕸️ **Knowledge Graph** — Automated analysis and visualization of knowledge links (God nodes, Orphans)
 - 📊 **Self-maintaining indexes** — Master index, glossary, backlinks, executive overview, operations log
 - 🛡️ **Quality gates** — Article size guardrails, anti-cramming/thinning rules, re-read checks
 - 🧹 **Wiki health checks** — Automated tone, structure, link, and contradiction auditing
@@ -193,6 +195,7 @@ llm-wiki-template/
 ├── AGENTS.md                ← Agent operating manual (the brain)
 ├── README.md                ← This file
 ├── update.py                ← 🆕 One-command updater script
+├── sync-brain.ps1           ← 🆕 Auto-sync to GitHub script
 ├── .gitignore
 │
 ├── .agents/workflows/       ← 10 automated workflows
@@ -205,6 +208,15 @@ llm-wiki-template/
 │   ├── save.md              ← 🆕 Chat-to-Wiki pipeline
 │   ├── startup.md           ← 🆕 Session startup
 │   └── wrapup.md            ← 🆕 Session wrapup
+│
+├── integrations/mcp/        ← 🆕 MCP Server Integration
+│   ├── server.py            ← FastMCP Server
+│   └── config-sample.json   ← Sample config for Claude/Cursor
+│
+├── scripts/                 ← 🆕 Agent-Native Tooling
+│   ├── brain.py             ← Multi-purpose router (Search, Index, Health, etc.)
+│   ├── build_search_index.py← FTS5 Indexing
+│   └── ...                  ← Other tools
 │
 ├── .obsidian/               ← Obsidian config (pre-configured)
 │
@@ -230,6 +242,7 @@ llm-wiki-template/
 │   ├── _absorb_log.json     ← Compilation tracker
 │   ├── _backlinks.json      ← Reverse link index
 │   ├── _build_backlinks.py  ← Backlinks builder script
+│   ├── _build_graph.py      ← 🆕 Knowledge Graph analysis script
 │   ├── _dashboard.md        ← Dataview dashboard
 │   ├── _ops_log.md          ← Operations log
 │   ├── concepts/

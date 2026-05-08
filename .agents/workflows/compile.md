@@ -216,6 +216,15 @@ python wiki/_build_graph.py
 ```
 Log kết quả: "Graph rebuilt: X nodes, Y edges, Z isolated."
 
+### 12.6. Refresh Search Index
+
+// turbo
+Cập nhật FTS5 search index để tích hợp bài mới:
+```bash
+python scripts/brain.py index
+```
+Log kết quả index.
+
 ## Quy Tắc Biên Dịch Quan Trọng
 
 1. **KHÔNG BAO GIỜ sửa raw/** — chỉ đọc

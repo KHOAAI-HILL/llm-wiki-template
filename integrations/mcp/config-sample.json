@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "second-brain": {
+      "command": "python",
+      "args": ["/absolute/path/to/llm-wiki-template/integrations/mcp/server.py", "--transport", "stdio"],
+      "env": {}
+    }
+  }
+}

@@ -40,6 +40,8 @@ Kết quả là một hệ thống kiến thức **100% kiểm tra được**, d
 - 🔬 **Nghiên cứu tự động** — Agent tự tìm kiếm web, đánh giá nguồn, và nạp tự động
 - ⚖️ **Phát hiện mâu thuẫn** — Đánh dấu các claim xung đột thay vì ghi đè im lặng
 - 💾 **Chat-to-Wiki** — Lưu kiến thức từ cuộc hội thoại trực tiếp vào wiki
+- 🔌 **MCP Server Tích Hợp** — API chuẩn MCP (Model Context Protocol) với FTS5 search cho AI agent
+- 🕸️ **Knowledge Graph** — Tự động phân tích và trực quan hóa liên kết tri thức (God nodes, Orphans)
 - 📊 **Index tự bảo trì** — Master index, glossary, backlinks, executive overview, operations log
 - 🛡️ **Cổng chất lượng** — Giới hạn kích thước bài, chống nhồi nhét/mỏng quá, kiểm tra lại trước khi sửa
 - 🧹 **Kiểm tra sức khỏe wiki** — Tự động audit giọng văn, cấu trúc, liên kết, và mâu thuẫn tồn đọng
@@ -195,6 +197,7 @@ llm-wiki-template/
 ├── README.md                ← README tiếng Anh
 ├── README-vi.md             ← File này (tiếng Việt)
 ├── update.py                ← 🆕 Script cập nhật 1 lệnh
+├── sync-brain.ps1           ← 🆕 Script đồng bộ tự động lên GitHub
 ├── .gitignore
 │
 ├── .agents/workflows/       ← 10 workflow tự động
@@ -207,6 +210,15 @@ llm-wiki-template/
 │   ├── save.md              ← 🆕 Pipeline Chat-to-Wiki
 │   ├── startup.md           ← 🆕 Khởi động phiên làm việc
 │   └── wrapup.md            ← 🆕 Tổng kết phiên làm việc
+│
+├── integrations/mcp/        ← 🆕 Tích hợp MCP Server
+│   ├── server.py            ← FastMCP Server
+│   └── config-sample.json   ← Cấu hình mẫu cho Claude/Cursor
+│
+├── scripts/                 ← 🆕 Agent-Native Tooling
+│   ├── brain.py             ← Router đa năng (Search, Index, Health, v.v.)
+│   ├── build_search_index.py← FTS5 Indexing
+│   └── ...                  ← Các tool khác
 │
 ├── .obsidian/               ← Cấu hình Obsidian (đã thiết lập sẵn)
 │
@@ -232,6 +244,7 @@ llm-wiki-template/
 │   ├── _absorb_log.json     ← Theo dõi biên dịch
 │   ├── _backlinks.json      ← Chỉ mục liên kết ngược
 │   ├── _build_backlinks.py  ← Script build backlinks
+│   ├── _build_graph.py      ← 🆕 Script phân tích Knowledge Graph
 │   ├── _dashboard.md        ← Dashboard Dataview
 │   ├── _ops_log.md          ← Nhật ký vận hành
 │   ├── concepts/
