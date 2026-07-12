@@ -116,9 +116,12 @@ Sau khi viết session summary, **CẬP NHẬT** file `sessions/current-context.
 **4.1 Xóa Hot Buffer:**
 Sử dụng lệnh shell để xóa file `sessions/.hot-buffer.md` (nếu có), vì toàn bộ dữ liệu đã được tổng hợp an toàn vào Archive và Rolling Context.
 
-**4.2 Báo người dùng ngắn gọn:**
+**4.2 Dọn dẹp Tool Refs (Context Offloading Cleanup):**
+Kiểm tra thư mục `scratch/tool-refs/` trong workspace hiện tại. Nếu có file, đếm số lượng, xóa toàn bộ file (dùng PowerShell hoặc lệnh hệ thống) và ghi nhận số file đã dọn dẹp vào báo cáo.
+
+**4.3 Báo người dùng ngắn gọn:**
 - Session log (archive) đã lưu
-- Rolling context đã cập nhật ✅ (Đã dọn dẹp Hot Buffer)
+- Rolling context đã cập nhật ✅ (Đã dọn dẹp Hot Buffer & Tool Refs)
 - Việc dang dở cho phiên sau
 
 ## Khi nào Skill này kích hoạt?

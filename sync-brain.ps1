@@ -1,7 +1,7 @@
 # ============================================================
 #  sync-brain.ps1 - Bidirectional sync Second Brain to GitHub
 #  Trigger: Called after /brain-compile or /wrapup
-#  Repo:    https://github.com/KHOAAI-HILL/lekhoa-second-brain
+#  Repo:    https://github.com/YOUR_USERNAME/your-wiki-repo
 # ============================================================
 
 # ===== CONFIG =====

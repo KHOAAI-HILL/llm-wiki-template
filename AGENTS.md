@@ -81,11 +81,9 @@ Second-brain/
 │   └── summaries/       ← Quick summaries on demand
 │
 ├── sessions/            ← Session logs TẬP TRUNG từ tất cả dự án
-│   ├── hermes-agent/    ← Sessions từ Hermes-Agent
-│   ├── kenh-youtube/    ← Sessions từ kenh-youtube
-│   ├── bai-viet-mxh/    ← Sessions từ bai-viet-mxh
-│   ├── rag-notebooklm/  ← Sessions từ RAG-notebooklm
-│   └── second-brain/    ← Sessions từ Second-brain
+│   ├── project-alpha/   ← Sessions từ dự án Alpha
+│   ├── project-beta/    ← Sessions từ dự án Beta
+│   └── this-wiki/       ← Sessions từ wiki này
 │
 └── AGENTS.md            ← THIS FILE — vault schema
 ```
@@ -251,3 +249,29 @@ See `integrations/hermes/` for:
 - `docker/` — Deployment snippets for Docker/Railway
 
 The integration is read-only by design. Hermes can query the wiki but cannot modify it. All writes go through the local AI agent via `/ingest` and `/compile` workflows.
+
+## Context Offloading (Giải phóng Ngữ cảnh)
+
+Khi Agent nhận kết quả từ tool call (run_command, view_file, grep_search, v.v.) mà output **vượt quá 5,000 ký tự**, Agent PHẢI thực hiện quy trình sau:
+
+### Quy trình Offload
+1. **Lưu output thô** vào file `scratch/tool-refs/ref-[NNN]-[mô-tả].md` trong thư mục workspace hiện tại.
+   - `[NNN]`: số thứ tự tăng dần trong phiên (001, 002, 003...).
+   - `[mô-tả]`: slug ngắn gọn mô tả nội dung (ví dụ: `search-wiki`, `run-tests`).
+2. **Giữ lại trong context** chỉ một bản tóm tắt ngắn gồm:
+   - Ref ID (ví dụ: `ref-001`)
+   - Tên tool đã gọi + tham số chính
+   - Số lượng kết quả / dòng output
+   - 3–5 điểm nổi bật
+   - Đường dẫn tuyệt đối đến file ref
+3. **Khi cần xem lại chi tiết**, Agent gọi `view_file` trên file ref với `StartLine`/`EndLine` cụ thể — KHÔNG đọc toàn bộ file.
+
+### Ngưỡng & Ngoại lệ
+- **Ngưỡng offload:** 5,000 ký tự (điều chỉnh nếu cần).
+- **Dưới ngưỡng:** Giữ nguyên output trong context như bình thường.
+- **Ngoại lệ:** KHÔNG offload kết quả của các tool đọc file mà Agent đang chủ động chỉnh sửa (cần nội dung trực tiếp để viết code).
+
+### Vòng đời file ref
+- File ref là **tạm thời**, chỉ có giá trị trong phiên hiện tại.
+- `/wrapup` sẽ xóa toàn bộ `scratch/tool-refs/` cuối phiên.
+- KHÔNG commit file ref vào Git.
