@@ -30,3 +30,6 @@ wiki/_graph.json
 
 # Sync automation
 sync-log.txt
+
+# Scratch files & Tool refs
+scratch/
