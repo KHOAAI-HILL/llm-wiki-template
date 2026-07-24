@@ -39,6 +39,26 @@ def init_db(db_path: Path):
         )
     ''')
 
+    # Bảng graph_triples lưu vết các cạnh đồ thị
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS graph_triples (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            source_id TEXT NOT NULL,
+            predicate TEXT NOT NULL,
+            target_id TEXT NOT NULL,
+            provenance TEXT,
+            extraction_method TEXT
+        )
+    ''')
+
+    # Bảng entity_aliases ánh xạ alias -> canonical slug
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS entity_aliases (
+            alias TEXT PRIMARY KEY,
+            canonical_id TEXT NOT NULL
+        )
+    ''')
+
     conn.commit()
     return conn
 
@@ -95,6 +115,45 @@ def upsert_doc(conn: sqlite3.Connection, doc_dict: dict, mtime: float):
         conn.rollback()
         raise
 
+def save_graph_triples(conn: sqlite3.Connection, triples: list[dict]):
+    """Cập nhật toàn bộ bảng graph_triples từ danh sách triples."""
+    cursor = conn.cursor()
+    try:
+        cursor.execute('DELETE FROM graph_triples')
+        for t in triples:
+            cursor.execute('''
+                INSERT INTO graph_triples (source_id, predicate, target_id, provenance, extraction_method)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (
+                t['source'],
+                t['predicate'],
+                t['target'],
+                t.get('provenance', ''),
+                t.get('extraction_method', 'body_wikilink')
+            ))
+        conn.commit()
+    except Exception as e:
+        print(f"Error saving graph triples: {e}")
+        conn.rollback()
+        raise
+
+def save_entity_aliases(conn: sqlite3.Connection, alias_map: dict[str, str]):
+    """Cập nhật bảng entity_aliases từ dict {alias: canonical_slug}."""
+    cursor = conn.cursor()
+    try:
+        cursor.execute('DELETE FROM entity_aliases')
+        for alias, canonical_id in alias_map.items():
+            if alias and canonical_id:
+                cursor.execute('''
+                    INSERT OR REPLACE INTO entity_aliases (alias, canonical_id)
+                    VALUES (?, ?)
+                ''', (alias.strip().lower(), canonical_id.strip().lower()))
+        conn.commit()
+    except Exception as e:
+        print(f"Error saving entity aliases: {e}")
+        conn.rollback()
+        raise
+
 def remove_docs(conn: sqlite3.Connection, valid_ids: set):
     """Xóa các bản ghi không còn tồn tại trên file system."""
     cursor = conn.cursor()
@@ -126,3 +185,4 @@ def remove_docs(conn: sqlite3.Connection, valid_ids: set):
             raise
             
     return len(ids_to_remove)
+

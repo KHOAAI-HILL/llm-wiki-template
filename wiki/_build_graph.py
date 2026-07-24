@@ -1,47 +1,55 @@
 import os
 import re
 import json
+import sys
+import yaml
 from pathlib import Path
 from datetime import datetime
 from collections import defaultdict, deque
 
 WIKI_DIR = Path(__file__).parent
+WORKSPACE = WIKI_DIR.parent
 GRAPH_FILE = WIKI_DIR / "_graph.json"
 VIEWER_FILE = WIKI_DIR / "_graph_viewer.html"
+DB_FILE = WORKSPACE / "sessions" / "brain.db"
+
+# Import brain_db module
+sys.path.insert(0, str(WORKSPACE / "scripts"))
+import brain_db
+
+def clean_slug(link_text: str) -> str:
+    """Clean link text to canonical kebab-case slug."""
+    if not link_text:
+        return ""
+    # Strip wikilink brackets if present
+    text = re.sub(r'^\[\[|\]\]$', '', link_text.strip())
+    # Strip pipe aliases
+    if '|' in text:
+        text = text.split('|')[0]
+    slug = text.strip().lower().replace(" ", "-")
+    if slug.endswith('.md'):
+        slug = slug[:-3]
+    return slug
 
 def extract_wikilinks(content):
     """Tìm tất cả [[link]] hoặc [[link|alias]] trong nội dung."""
     links = re.findall(r'\[\[([^\]|]+)(?:\|[^\]]+)?\]\]', content)
     cleaned_links = []
     for link in links:
-        l = link.strip().lower().replace(" ", "-")
-        if l.endswith('.md'):
-            l = l[:-3]
-        if l:
-            cleaned_links.append(l)
+        s = clean_slug(link)
+        if s:
+            cleaned_links.append(s)
     return cleaned_links
 
 def parse_frontmatter(content):
-    """Trích xuất YAML frontmatter bằng regex để tránh dependency PyYAML."""
-    match = re.match(r'^---\n(.*?)\n---', content, re.DOTALL)
-    meta = {}
+    """Trích xuất và parse khối YAML frontmatter bằng PyYAML."""
+    match = re.match(r'^---\s*\n(.*?)\n---\s*\n', content, re.DOTALL)
     if match:
-        lines = match.group(1).strip().split('\n')
-        for line in lines:
-            if ':' in line:
-                parts = line.split(':', 1)
-                key = parts[0].strip()
-                val = parts[1].strip()
-                
-                if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
-                    val = val[1:-1]
-                
-                if val.startswith('[') and val.endswith(']'):
-                    items = [i.strip().strip('"').strip("'") for i in val[1:-1].split(',')]
-                    meta[key] = [i for i in items if i]
-                else:
-                    meta[key] = val
-    return meta
+        try:
+            return yaml.safe_load(match.group(1)) or {}, content[match.end():]
+        except yaml.YAMLError:
+            pass
+    return {}, content
 
 def compute_metrics(nodes, edges):
     """Tính toán các chỉ số graph: God nodes, surprising connections, isolated, clusters."""
@@ -72,6 +80,7 @@ def compute_metrics(nodes, edges):
             surprising_edges.append({
                 "source": edge["source"],
                 "target": edge["target"],
+                "predicate": edge.get("predicate", "references"),
                 "reason": f"Cross-category link ({src_cat} -> {tgt_cat})"
             })
     
@@ -111,7 +120,6 @@ def compute_metrics(nodes, edges):
 
 def build_html_viewer(nodes, edges):
     """Tạo file HTML tĩnh sử dụng vis-network để vẽ đồ thị."""
-    # Convert nodes to vis.js format
     vis_nodes = []
     for n in nodes:
         group = n["category"]
@@ -132,10 +140,18 @@ def build_html_viewer(nodes, edges):
             "title": f"Category: {group}<br>Links: {n['link_count']}",
             "color": color,
             "group": group,
-            "value": n["link_count"] + 1 # Tự động scale độ lớn dựa vào số link
+            "value": n["link_count"] + 1
         })
         
-    vis_edges = [{"from": e["source"], "to": e["target"]} for e in edges]
+    vis_edges = [
+        {
+            "from": e["source"],
+            "to": e["target"],
+            "label": e.get("predicate", "references"),
+            "font": {"size": 9, "color": "#aaaaaa"}
+        }
+        for e in edges
+    ]
     
     html_template = f"""<!DOCTYPE html>
 <html>
@@ -216,7 +232,9 @@ def build_html_viewer(nodes, edges):
 
 def main():
     nodes_dict = {}
-    edges = []
+    edges_list = []
+    triples_list = []
+    alias_map = {}
     
     for md_file in WIKI_DIR.rglob("*.md"):
         if md_file.name.startswith("_"):
@@ -227,37 +245,93 @@ def main():
         except UnicodeDecodeError:
             continue
             
-        meta = parse_frontmatter(content)
-        links = extract_wikilinks(content)
+        meta, body_content = parse_frontmatter(content)
+        body_links = extract_wikilinks(body_content)
         
         node_id = md_file.stem.lower().replace(" ", "-")
         category = md_file.parent.name if md_file.parent != WIKI_DIR else "root"
+        provenance = str(md_file.relative_to(WORKSPACE)).replace('\\', '/')
+        title = meta.get("title", md_file.stem)
         
-        # Dùng dictionary để tự động ghi đè/deduplicate ID nếu có 2 file cùng tên
+        # Entity resolution aliases map
+        alias_map[node_id] = node_id
+        alias_map[title.lower()] = node_id
+        for alias in meta.get("aliases", []):
+            if isinstance(alias, str) and alias.strip():
+                alias_map[alias.strip().lower()] = node_id
+
+        # Edge tracking map to avoid duplicate edges per source-target pair
+        added_targets = set()
+        
+        # 1. Frontmatter triples (highest priority)
+        custom_triples = meta.get("triples", [])
+        if isinstance(custom_triples, list):
+            for t in custom_triples:
+                if isinstance(t, dict) and "target" in t:
+                    tgt_slug = clean_slug(t["target"])
+                    pred = t.get("predicate", "references").strip()
+                    if tgt_slug:
+                        edges_list.append({"source": node_id, "target": tgt_slug, "predicate": pred})
+                        triples_list.append({
+                            "source": node_id,
+                            "predicate": pred,
+                            "target": tgt_slug,
+                            "provenance": provenance,
+                            "extraction_method": "frontmatter_triple"
+                        })
+                        added_targets.add(tgt_slug)
+
+        # 2. Related field in frontmatter
+        related_links = meta.get("related", [])
+        if isinstance(related_links, list):
+            for rel in related_links:
+                if isinstance(rel, str):
+                    rel_slug = clean_slug(rel)
+                    if rel_slug and rel_slug not in added_targets:
+                        edges_list.append({"source": node_id, "target": rel_slug, "predicate": "references"})
+                        triples_list.append({
+                            "source": node_id,
+                            "predicate": "references",
+                            "target": rel_slug,
+                            "provenance": provenance,
+                            "extraction_method": "related_field"
+                        })
+                        added_targets.add(rel_slug)
+
+        # 3. Wikilinks in body content
+        for link_slug in body_links:
+            if link_slug and link_slug not in added_targets:
+                edges_list.append({"source": node_id, "target": link_slug, "predicate": "references"})
+                triples_list.append({
+                    "source": node_id,
+                    "predicate": "references",
+                    "target": link_slug,
+                    "provenance": provenance,
+                    "extraction_method": "body_wikilink"
+                })
+                added_targets.add(link_slug)
+
         nodes_dict[node_id] = {
             "id": node_id,
-            "title": meta.get("title", md_file.stem),
+            "title": title,
             "category": category,
             "tags": meta.get("tags", []),
             "status": meta.get("status", "draft"),
-            "link_count": len(links)
+            "link_count": len(added_targets)
         }
-        
-        for link in links:
-            edges.append({"source": node_id, "target": link, "type": "wikilink"})
-    
+
     nodes = list(nodes_dict.values())
-    
     node_ids = {n["id"] for n in nodes}
-    valid_edges = [e for e in edges if e["target"] in node_ids]
-    dangling_count = len(edges) - len(valid_edges)
+    valid_edges = [e for e in edges_list if e["target"] in node_ids]
+    valid_triples = [t for t in triples_list if t["target"] in node_ids]
+    dangling_count = len(edges_list) - len(valid_edges)
     
     stats = compute_metrics(nodes, valid_edges)
     stats["dangling_links"] = dangling_count
     
     output = {
         "nodes": nodes,
-        "edges": edges,
+        "edges": valid_edges,
         "insights": stats,
         "last_built": datetime.now().isoformat()
     }
@@ -265,10 +339,17 @@ def main():
     GRAPH_FILE.write_text(json.dumps(output, indent=2, ensure_ascii=False), encoding="utf-8")
     build_html_viewer(nodes, valid_edges)
     
-    print(f"Graph rebuilt: {stats['total_nodes']} nodes, {stats['total_edges']} edges, {len(stats['isolated_nodes'])} isolated.")
+    # Ghi dữ liệu vào SQLite DB (sessions/brain.db)
+    conn = brain_db.init_db(DB_FILE)
+    brain_db.save_graph_triples(conn, valid_triples)
+    brain_db.save_entity_aliases(conn, alias_map)
+    conn.close()
+
+    print(f"Graph rebuilt & saved to SQLite: {stats['total_nodes']} nodes, {stats['total_edges']} edges ({len(valid_triples)} triples saved).")
     print(f"God Nodes: {[n['id'] for n in stats['god_nodes']]}")
-    print(f"Found {len(stats['surprising_connections'])} surprising connections.")
+    print(f"Aliases mapped: {len(alias_map)} entries.")
     print(f"Viewer generated at: {VIEWER_FILE.relative_to(WIKI_DIR.parent)}")
 
 if __name__ == "__main__":
     main()
+

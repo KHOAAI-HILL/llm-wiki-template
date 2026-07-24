@@ -108,9 +108,28 @@ status: draft | reviewed | canonical
 related:
   - "[[other-article]]"
   - "[[another-one]]"
+triples: # Tùy chọn - Khai báo vị ngữ Knowledge Graph
+  - predicate: "uses_pattern"
+    target: "[[other-article]]"
+  - predicate: "integrates_with"
+    target: "[[another-one]]"
 summary: "One-line summary for index.md"
 ---
 ```
+
+### Predicate Vocabulary (Từ vựng Vị ngữ Chuẩn)
+| Predicate | Ý nghĩa |
+|---|---|
+| `references` | Tham chiếu chung (mặc định) |
+| `uses_pattern` | Áp dụng mẫu thiết kế/kiến trúc |
+| `integrates_with` | Tích hợp kỹ thuật trực tiếp |
+| `developed_by` | Tác giả / tổ chức phát triển |
+| `extends` | Mở rộng / kế thừa từ |
+| `solves` | Giải quyết vấn đề |
+| `compares_with` | Đối tượng so sánh |
+| `part_of` | Thành phần con của |
+| `caused_by` | Nguyên nhân gốc rễ |
+| `alternative_to` | Phương án thay thế |
 
 ### Content Rules
 - Use `[[wikilinks]]` for internal links (Obsidian-native)
